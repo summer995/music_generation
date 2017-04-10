@@ -275,7 +275,7 @@ def extract_key_frame_time(dir):
     needed_key_frame_time = [0]#save the time of every needed key frame
     needed_key_frame = [key_frame[0]]
     for i in time:
-        if i > seg + 9:
+        if i > seg + 6:
             needed_key_frame_time.append(i-1)
             for frame in key_frame:
                 if int(re.findall(r'(\w*[0-9]+)\w*',frame)[0])== i:
@@ -296,14 +296,9 @@ def extract_key_frame_time(dir):
     
     return needed_key_frame_length,needed_key_frame
 
-
-
-
-
-
 if __name__ == '__main__':
 
-    length,frame = extract_key_frame_time("/home/xiatian/music_generation/test_image")
+    length,frame = extract_key_frame_time("/home/xiat/music_generation/test_image")
     for i in length:
         print i
     for i in frame:

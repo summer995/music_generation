@@ -7,9 +7,7 @@ from keras.optimizers import SGD
 from googlenet_custom_layers import PoolHelper,LRN
 import numpy as np
 import sys
-from sklearn.externals import joblib
-from sklearn import svm
-import os
+
 
 def create_googlenet(weights_path=None):
     # creates GoogLeNet a.k.a. Inception v1 (Szegedy, 2015)
@@ -247,7 +245,7 @@ def create_googlenet(weights_path=None):
     loss3_classifier_act = Activation('softmax',name='prob')(loss3_classifier)
 
 
-    googlenet = Model(input=input, output=[loss1_classifier_act,loss2_classifier_act,loss3_classifier_act,loss1_classifier,loss2_classifier,loss3_classifier])
+    googlenet = Model(input=input, output=[loss1_classifier_act,loss2_classifier_act,loss3_classifier_act])
 
     if weights_path:
         googlenet.load_weights(weights_path)
@@ -255,7 +253,9 @@ def create_googlenet(weights_path=None):
     return googlenet
 
 
-def feature_extract(picture):
+
+if __name__ == "__main__":
+    picture = sys.argv[1]
     img = imresize(imread(picture, mode='RGB'), (224, 224)).astype(np.float32)
     img[:, :, 0] -= 123.68
     img[:, :, 1] -= 116.779
@@ -264,41 +264,13 @@ def feature_extract(picture):
     img = img.transpose((2, 0, 1))
     img = np.expand_dims(img, axis=0)
 
-    return img
-
-def predict_emotion(picture_dir):
-
-    feature = []
-    curDir = os.getcwd()
-    os.chdir(picture_dir)
-    for picture in os.listdir(picture_dir):
-        print picture
-        picture_feature = feature_extract(picture)
-        feature.append(picture_feature)
-
-
-    os.chdir("/home/xiat/music_generation")
     # Test pretrained model
     model = create_googlenet('googlenet_weights.h5')
     sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(optimizer=sgd, loss='categorical_crossentropy')
-    output = []
-    for picture_feature in feature:
-        out = model.predict(picture_feature) # note: the model has three outputs
-        data_test = np.array(out[3:]).reshape(1,-1)
-        #clf1 = joblib.load('train_model1.m')
-        #clf2 = joblib.load('train_model2.m')
-        #x = (clf1.predict(data_test).tolist()[0] - 5)
-        #y = (clf2.predict(data_test).tolist()[0] - 5)
-        clf = joblib.load('train_model.m')
-        level = clf.predict(data_test).tolist()
-        #print level
-        output+=level
-    os.chdir(curDir)
-    return output
-
-if __name__ == "__main__":
-    picture_dir = sys.argv[1]
-    output = predict_emotion(picture_dir)
-    for out in output:
-        print out
+    out = model.predict(img) # note: the model has three outputs
+    f = open('synset_words.txt','r')
+    lines = f.readlines()
+    f.close()
+    pre = np.argmax(out[2])
+    print lines[pre]

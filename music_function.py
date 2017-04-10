@@ -1,7 +1,7 @@
 from Nsound import *
 import os
 import random
-curDir = os.chdir("/data/xiatian/src/")
+curDir = os.chdir("/data/xiat/src/")
 
 
 def make_pad (ins_kind,score,chord_duration):
@@ -215,7 +215,7 @@ def make_drum_pattern(total_duration,drum_pattern):
     #initial drum acompany AudioStream
     acompany = AudioStream(sr, 2)
     pattern_name = []
-    dir = "/data/xiatian/src/drum/"
+    dir = "/data/xiat/src/drum/"
     os.chdir(dir)
     for filename in os.listdir(dir):
         pattern_name.append(filename.split(".")[0])
@@ -234,7 +234,7 @@ def make_bass_pattern(total_duration,bass_pattern):
     #initial drum acompany AudioStream
     acompany = AudioStream(sr, 2)
     pattern_name = []
-    dir = "/data/xiatian/src/bass/"
+    dir = "/data/xiat/src/bass/"
     os.chdir(dir)
     for filename in os.listdir(dir):
         pattern_name.append(filename.split(".")[0])
@@ -250,7 +250,7 @@ def make_high_loop_pattern(total_duration,loop_pattern):
     #initial drum acompany AudioStream
     acompany = AudioStream(sr, 2)
     pattern_name = []
-    dir = "/data/xiatian/src/high_loop/"
+    dir = "/data/xiat/src/high_loop/"
     os.chdir(dir)
     for filename in os.listdir(dir):
         pattern_name.append(filename.split(".")[0])
@@ -269,7 +269,7 @@ def make_acoustic_loop_pattern(total_duration,loop_pattern,mode):
     #initial drum acompany AudioStream
     acompany = AudioStream(sr, 2)
     pattern_name = []
-    src_Dir = "/data/xiatian/src/"
+    src_Dir = "/data/xiat/src/"
     acoustic_loop_Dir = src_Dir + "acoustic_loop_mix_guitar_and_piano"
     if mode == "all_guitar":
         acoustic_loop_Dir = src_Dir + "acoustic_loop_guitar"
@@ -405,9 +405,9 @@ def get_mood_from_2Dcoordinate(valence,arousal):
 
 def get_mood_from_1Dcoordinate(valence):
     mood = "neutral"
-    if valence > 0.3 :
+    if valence > 0.55 :
         mood = "happy"
-    elif valence < -0.3:
+    elif valence < 0.35:
         mood = "sad"
 
     return mood
@@ -430,7 +430,7 @@ def get_mood_part(mood,dir):
 def generate_music_from_moodList(mood_list,part_duration,mode,output_dir):
     music_set = []
 
-    src_Dir = "/data/xiatian/src/"
+    src_Dir = "/data/xiat/src/"
     acoustic_loop_Dir = src_Dir +"acoustic_loop_mix_guitar_and_piano"
     if mode == "all_guitar":
         acoustic_loop_Dir = src_Dir + "acoustic_loop_guitar"
@@ -488,7 +488,7 @@ def generate_music_from_moodList(mood_list,part_duration,mode,output_dir):
 def generate_music_from_moodList_with_time(mood_list,part_duration,mood_duration,mode,output_dir):
     music_set = []
 
-    src_Dir = "/data/xiatian/src/"
+    src_Dir = "/data/xiat/src/"
     acoustic_loop_Dir = src_Dir +"acoustic_loop_mix_guitar_and_piano"
     if mode == "all_guitar":
         acoustic_loop_Dir = src_Dir + "acoustic_loop_guitar"
@@ -512,32 +512,55 @@ def generate_music_from_moodList_with_time(mood_list,part_duration,mood_duration
     neutral_drum_part = get_mood_part("neutral",drum_Dir)
     sad_drum_part = get_mood_part("sad",drum_Dir)
 
+
+    drum_volume = 0.8
+
+    used_pattern = []
+
+
+
     for index,mood in enumerate(mood_list):
         acoustic_part = []
         drum_part = []
         if mood == "happy":
             acoustic_part = happy_acoustic_part
             drum_part = happy_drum_part
+            drum_volume = 0.8
         elif mood == "neutral":
             acoustic_part = neutral_acoustic_part
             drum_part = neutral_drum_part
+            drum_volume = 0.3
         elif mood == "sad":
             acoustic_part = sad_acoustic_part
             drum_part = sad_drum_part
+            drum_volume = 0.1
 
         drum_pattern = get_random(drum_part)
         acoustic_pattern = get_random(acoustic_part)
+
+
+
+        '''
+        while drum_pattern in used_pattern:
+            drum_pattern = get_random(drum_part)
+        while acoustic_pattern in used_pattern:
+            acoustic_pattern = get_random(acoustic_part)
+
+        used_pattern.append(drum_pattern)
+        used_pattern.append(acoustic_pattern)
+        '''
+
         print "drum pattern: " + drum_pattern
         print "acoustic pattern: " + acoustic_pattern
-        part = generate_music_part(part_duration,mode,drum_pattern,0.8,
+        part = generate_music_part(part_duration,mode,drum_pattern,drum_volume,
                                    "silence",0.5,"silence",0.5,
                                    acoustic_pattern,1.0).substream(0.0,float(mood_duration[index]))
         while part.getDuration() < mood_duration[index]:
-            drum_pattern = get_random(drum_part)
-            acoustic_pattern = get_random(acoustic_part)
+            #drum_pattern = get_random(drum_part)
+            #acoustic_pattern = get_random(acoustic_part)
             print "drum pattern: " + drum_pattern
             print "acoustic pattern: " + acoustic_pattern
-            part << generate_music_part(part_duration,mode,drum_pattern,0.8,
+            part << generate_music_part(part_duration,mode,drum_pattern,drum_volume,
                                    "silence",0.5,"silence",0.5,
                                    acoustic_pattern,1.0)
         part = part.substream(0.0,float(mood_duration[index]))
@@ -554,7 +577,7 @@ def generate_music_from_moodList_with_time(mood_list,part_duration,mood_duration
 
 if __name__ == "__main__":
     #show all the resource of music
-    src_Dir = "/data/xiatian/src/"
+    src_Dir = "/data/xiat/src/"
     #acoustic_loop_Dir = src_Dir + "acoustic_loop"
     high_loop_Dir = src_Dir + "high_loop"
     bass_Dir = src_Dir + "bass"
@@ -562,7 +585,7 @@ if __name__ == "__main__":
 
     part_duration = 16.0
     mood_list = ["happy","neutral","happy","sad","neutral"]
-    output_dir = "/home/xiatian/music_generation/"
+    output_dir = "/home/xiat/music_generation/"
     mode1 = "all_guitar"
     mode2 = "all_piano"
     mode3 = "mix_guitar_and_piano"
@@ -626,7 +649,7 @@ if __name__ == "__main__":
 
     music_set = [out1,out2,out3,out4]
     out = smooth_connect_music(music_set)
-    os.chdir("/home/xiatian/nsound/")
+    os.chdir("/home/xiat/nsound/")
     out >> "GenerateMusic.wav"
     '''
 

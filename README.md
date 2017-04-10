@@ -1,1 +1,1 @@
-video-based music generation script
+video-based music generation
